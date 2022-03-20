@@ -69,5 +69,17 @@ app.post("/task", (req, res) => {
     return res.sendStatus(200);
 });
 
+app.delete("/task/:id", (req, res) => {
+    if (req.params.id === undefined)
+    {
+        return res.statusCode(400);
+    }
+
+    let taskIndex = TASKS.findIndex(item => item.id === parseInt(req.params.id));
+    TASKS.splice(taskIndex, 1);
+
+    return res.statusCode(200);
+});
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => { console.log(`Working http://localhost:${PORT}`); });
