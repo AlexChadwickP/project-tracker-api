@@ -54,7 +54,7 @@ app.post("/task", (req, res) => {
 
     if (newTask.title === undefined || newTask.author === undefined)
     {
-        return res.statusCode("400");
+        return res.sendStatus("400");
     }
 
     TASKS.push(
@@ -72,13 +72,13 @@ app.post("/task", (req, res) => {
 app.delete("/task/:id", (req, res) => {
     if (req.params.id === undefined)
     {
-        return res.statusCode(400);
+        return res.sendStatus(400);
     }
 
     let taskIndex = TASKS.findIndex(item => item.id === parseInt(req.params.id));
     TASKS.splice(taskIndex, 1);
 
-    return res.statusCode(200);
+    return res.sendStatus(200);
 });
 
 const PORT = process.env.PORT || 8080;
