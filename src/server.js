@@ -18,6 +18,8 @@ app.use(express.json());
 6 - DONE
 */
 
+
+// TODO: Replace this with a database connection
 let TASKS = [
     {
         id: 0,
@@ -54,7 +56,7 @@ app.post("/task", (req, res) => {
 
     if (newTask.title === undefined || newTask.author === undefined)
     {
-        return res.statusCode("400");
+        return res.sendStatus("400");
     }
 
     TASKS.push(
@@ -65,6 +67,33 @@ app.post("/task", (req, res) => {
             priority: newTask.priority ?? 4
         }
     );
+
+    return res.sendStatus(200);
+});
+
+app.delete("/task/:id", (req, res) => {
+    if (req.params.id === undefined)
+    {
+        return res.sendStatus(400);
+    }
+
+    let taskIndex = TASKS.findIndex(item => item.id === parseInt(req.params.id));
+    TASKS.splice(taskIndex, 1);
+
+    return res.sendStatus(200);
+});
+
+app.put("/task/status/:id", (req, res) => {
+    if (req.params.id === undefined || req.query.newVal === undefined)
+    {
+        return res.sendStatus(400);
+    }
+
+    const id = req.params.id;
+
+    let taskIndex = TASKS.findIndex(item => item.id === parseInt(req.params.id));
+
+    TASKS[taskIndex].priority = parseInt(req.query.newVal);
 
     return res.sendStatus(200);
 });
