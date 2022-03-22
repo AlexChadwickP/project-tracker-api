@@ -10,6 +10,7 @@ const db = new PrismaClient();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+process.env.MODE === "local" ? app.use(cors()) : () => {};
 
 /*
 0 - BACKLOG
