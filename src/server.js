@@ -1,9 +1,12 @@
 const express = require("express");
 const cors = require("cors");
+const { PrismaClient, prisma } = require("@prisma/client");
 
 require("dotenv").config();
 
 const app = express();
+
+const db = new PrismaClient();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -18,40 +21,25 @@ app.use(express.json());
 6 - DONE
 */
 
-
-// TODO: Replace this with a database connection
-let TASKS = [
-    {
-        id: 0,
-        title: "Do something important",
-        author: "Alex Chadwick",
-        priority: 1,
-        status: 4
-    },
-    {
-        id: 1,
-        title: "Merge branches",
-        author: "John Doe",
-        priority: 3,
-        status: 0
-    }
-];
-
 function taskById(task) {
     return task.id === this.id;
 }
 
-app.get("/task/:id?", (req, res) => {
+app.get("/task/:id?", async (req, res) => {
     if (req.params.id === undefined) {
-        return res.json(TASKS).send();
+        let tasks = await db.task.findMany();
+        return res.json(tasks).send();
     }
 
-    let task = TASKS.find(taskById, { id: parseInt(req.params.id) });
-
+    let task = await db.task.find({
+        where: {
+            id: req.params.id
+        }
+    });
     return res.json(task || { statusCode: 400 });
 });
 
-app.post("/task", (req, res) => {
+app.post("/task", async (req, res) => {
     let newTask = req.body;
 
     if (newTask.title === undefined || newTask.author === undefined)
@@ -59,31 +47,34 @@ app.post("/task", (req, res) => {
         return res.sendStatus("400");
     }
 
-    TASKS.push(
-        {
-            id: TASKS.length,
+    await db.task.create({
+        data: {
             title: newTask.title,
             author: newTask.author,
-            priority: newTask.priority ?? 4
+            status: 0,
+            priority: parseInt(newTask.priority) ?? 4
         }
-    );
+    });
 
     return res.sendStatus(200);
 });
 
-app.delete("/task/:id", (req, res) => {
+app.delete("/task/:id", async (req, res) => {
     if (req.params.id === undefined)
     {
         return res.sendStatus(400);
     }
 
-    let taskIndex = TASKS.findIndex(item => item.id === parseInt(req.params.id));
-    TASKS.splice(taskIndex, 1);
+    await db.task.delete({
+        where: {
+            id: req.params.id
+        }
+    });
 
     return res.sendStatus(200);
 });
 
-app.put("/task/status/:id", (req, res) => {
+app.put("/task/status/:id", async (req, res) => {
     if (req.params.id === undefined || req.query.newVal === undefined)
     {
         return res.sendStatus(400);
@@ -91,9 +82,14 @@ app.put("/task/status/:id", (req, res) => {
 
     const id = req.params.id;
 
-    let taskIndex = TASKS.findIndex(item => item.id === parseInt(req.params.id));
-
-    TASKS[taskIndex].priority = parseInt(req.query.newVal);
+    await db.task.update({
+        where: {
+            id: id
+        },
+        data: {
+            status: parseInt(req.query.newVal)
+        }
+    })
 
     return res.sendStatus(200);
 });
